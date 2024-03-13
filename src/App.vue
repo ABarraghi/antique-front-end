@@ -1,47 +1,61 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+            <div>
+                    <table>
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Origin</th>
+                            <th>Century</th>
+                            <th>Price</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(antique, index) in antiques" :key="index">
+                            <td>{{ antique.id }}</td>
+                            <td>{{ antique.name }}</td>
+                            <td>{{ antique.description }}</td>
+                            <td>{{ antique.origin }}</td>
+                            <td>{{ antique.century }}</td>
+                            <td>{{ antique.price }}</td>
+                            <td>{{ antique.category }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
 </template>
 
+<script>
+
+import axios from 'axios';
+
+  export default { 
+    name: "antique",
+    data() {
+          return{
+              antiques: {},
+          }
+    },
+    mounted() {
+      this.getAntiques();
+    },
+    methods: {
+      getAntiques(){
+        axios.get(`http://localhost:3500/api/antiques/`).then(res => {
+          this.antiques = res.data;
+        });
+      }
+    }
+}
+
+
+</script>
+
+
+
 <style scoped>
-header {
-  line-height: 1.5;
-}
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
 </style>
