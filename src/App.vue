@@ -3,6 +3,7 @@
     <div>
       <input type="text" placeholder="Search for an Antique" id="search-input">
       <button id="search-btn" @click="searchName()">Search!</button>
+      <button id="clear-btn" @click="clearFilters()">Clear!</button>
     </div>
   </section>
   <section>
@@ -64,8 +65,11 @@ import axios from 'axios';
             filteredAntiques.push(this.antiques[i]);
           }
         }
-        console.log(filteredAntiques);
         this.antiques = filteredAntiques;      
+      },
+      clearFilters(){
+        let input = document.getElementById("search-input").value = "";
+        this.getAntiques();
       }
     }
 }
