@@ -1,3 +1,4 @@
+
 <template>
   <section>
     <div>
@@ -5,10 +6,20 @@
       <button id="search-btn" @click="searchName()">Search!</button>
       <button id="clear-btn" @click="clearFilters()">Clear!</button>
 
-    <div v-for="(val, key) in sorts">
-      <input type="radio" name="radio" :value="val" v-model="selected" :id="key" @click="orderPrice(key)">
-      <label :for="val">{{ val }}</label>
-    </div>
+      <div id="sort-box" v-for="(val, key) in sorts">
+        <input type="radio" name="radio" :value="val" v-model="selected" :id="key" @click="orderPrice(key)">
+        <label :for="val">{{ val }}</label>
+      </div>
+
+      <h2>Filters:</h2>
+
+      <h4>By Category:</h4>
+      <div id="filterbox">
+        <div id="category-filter" v-for="(val,key) in categories">
+          <input type="checkbox" :name="val" :value="key" v-model="categoriesSelected" @change="filterByCategories(categoriesSelected)">
+          <label :for="val">{{ val }}</label>
+        </div>
+      </div>
     </div>
   </section>
   <section>
@@ -46,16 +57,6 @@
 
 import axios from 'axios';
 
-function compare(antique1,antique2){
-  if(antique1.price > antique2.price){
-    return 1;
-  }
-  if(antique1.price < antique2.price){
-    return -1;
-  }
-  return 0;
-}
-
   export default { 
     name: "antique",
     data() {
@@ -65,7 +66,17 @@ function compare(antique1,antique2){
                 "1": "Low to High", 
                 "-1": "High to Low"
               },
-              sortSelected: null
+              categories: {
+                1: "Porcelain and Cermaics",
+                2: "Framed Art",
+                3: "Statues and Figurines",
+                4: "Clocks",
+                5: "Furniture and Decor",
+                6: "Carpets",
+                7: "Other"
+              },
+              sortSelected: null,
+              categoriesSelected: []
           }
     },
     computed: {
@@ -100,6 +111,7 @@ function compare(antique1,antique2){
       clearFilters(){
         let input = document.getElementById("search-input").value = "";
         this.sortSelected = null;
+        this.categoriesSelected = [];
         this.getAntiques();
       }, 
       orderPrice(sortType){
@@ -109,6 +121,30 @@ function compare(antique1,antique2){
         else if(sortType == -1){
           this.antiques.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
         }
+      },
+      filterByCategories(){
+        axios.get(`http://localhost:3500/api/antiques/`).then(res => {
+          this.antiques = res.data;
+
+          let categoryTypes = JSON.parse(JSON.stringify(this.categoriesSelected));
+
+          for(let i = 0; i < categoryTypes.length; i++ ){
+            categoryTypes[i] = Number(categoryTypes[i]);
+          }
+
+          let filteredAntiques = [];
+          for(let i = 0; i < this.antiques.length; i++){
+            if(categoryTypes.includes(this.antiques[i].category)){
+              filteredAntiques.push(this.antiques[i]);
+            }
+          }
+
+          if(filteredAntiques.length!=0){
+            this.antiques = filteredAntiques; 
+          }
+          
+          this.orderPrice(this.sortSelected);
+        });
       }
     }
 }
