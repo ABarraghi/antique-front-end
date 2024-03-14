@@ -13,13 +13,23 @@
         <label :for="val">{{ val }}</label>
       </div>
 
-      <h2>Filters:</h2>
+      <h2>Filter By Category:</h2>
 
       <div id="filterbox">
-        <h4>By Category:</h4>
         <div id="category-filter" v-for="(val,key) in categories">
           <input type="checkbox" :name="val" :value="key" v-model="categoriesSelected" @change="filterByCategories(categoriesSelected)">
           <label :for="val">{{ val }}</label>
+        </div>
+      </div>
+
+      <h2>Items Per Page:</h2>
+      <div id="page-box">
+        <div id="items-per-page-box" v-for="val in itemsPerPage">
+          <button :name="val">{{ val }}</button>
+        </div>
+        <h2>Page:</h2>
+        <div id="pagination" v-for="i in numPages">
+          <button @click="displayPageAntiques(i)">{{ i }}</button>
         </div>
       </div>
     </div>
@@ -39,7 +49,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(antique, index) in antiques" :key="index">
+            <tr v-for="(antique, index) in curAntiques" :key="index">
               <td>{{ antique.id }}</td>
               <td>{{ antique.name }}</td>
               <td>{{ antique.description }}</td>
@@ -69,7 +79,7 @@ import axios from 'axios';
                 "-1": "High to Low"
               },
               categories: {
-                1: "Porcelain and Cermaics",
+                1: "Porcelain and Ceramics ",
                 2: "Framed Art",
                 3: "Statues and Figurines",
                 4: "Clocks",
@@ -79,7 +89,12 @@ import axios from 'axios';
               },
               sortSelected: null,
               categoriesSelected: [],
-              titleOrDesc: false
+              titleOrDesc: false, 
+              curAntiques: [],
+              itemsPerPage: [20,50,100],
+              itemsPerPageSelected: 20,
+              numPages: 8,
+              curPage: 1
           }
     },
     mounted() {
@@ -89,10 +104,21 @@ import axios from 'axios';
       getAntiques(){
         axios.get(`http://localhost:3500/api/antiques/`).then(res => {
           this.antiques = res.data;
+          this.displayPageAntiques(this.curPage);
         });
       },
+      displayPageAntiques(pageNum){
+        this.curPage = pageNum;
+        this.curAntiques = [];
+        let allAntiques = this.proxyToJSON(this.antiques);
+        let idx = (this.curPage-1) * 20;
+        let endIdx  = (this.curPage < this.numPages) ? this.curPage * 20 : allAntiques.length;
+        for(idx; idx < endIdx; idx++){
+          this.curAntiques.push(allAntiques[idx]);
+        }
+        console.log(this.proxyToJSON(this.curAntiques));
+      },
       search(){
-        
         let token = document.getElementById("search-input").value;
         let filteredAntiques = [];
         for(let i = 0; i < this.antiques.length; i++){
@@ -110,9 +136,10 @@ import axios from 'axios';
         this.antiques = filteredAntiques;      
       },
       clearFilters(){
-        let input = document.getElementById("search-input").value = "";
+        document.getElementById("search-input").value = "";
         this.sortSelected = null;
         this.categoriesSelected = [];
+        this.titleOrDesc = false;
         this.getAntiques();
       }, 
       orderPrice(sortType){
@@ -147,6 +174,9 @@ import axios from 'axios';
           this.orderPrice(this.sortSelected);
         });
       },
+      proxyToJSON(proxyArr){
+        return JSON.parse(JSON.stringify(proxyArr));
+      }
     }
 }
 
