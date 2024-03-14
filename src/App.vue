@@ -3,18 +3,20 @@
   <section>
     <div>
       <input type="text" placeholder="Search for an Antique" id="search-input">
-      <button id="search-btn" @click="searchName()">Search!</button>
-      <button id="clear-btn" @click="clearFilters()">Clear!</button>
+      <input type="checkbox" id="or-check" v-model="titleOrDesc">
+      <label for="or-check">Search Both Title and Description</label>
+      <button id="search-btn" @click="search()">Search</button>
+      <button id="clear-btn" @click="clearFilters()">Clear</button>
 
       <div id="sort-box" v-for="(val, key) in sorts">
-        <input type="radio" name="radio" :value="val" v-model="selected" :id="key" @click="orderPrice(key)">
+        <input type="radio" name="radio" :value="key" v-model="sortSelected" :id="key" @change="orderPrice(sortSelected)">
         <label :for="val">{{ val }}</label>
       </div>
 
       <h2>Filters:</h2>
 
-      <h4>By Category:</h4>
       <div id="filterbox">
+        <h4>By Category:</h4>
         <div id="category-filter" v-for="(val,key) in categories">
           <input type="checkbox" :name="val" :value="key" v-model="categoriesSelected" @change="filterByCategories(categoriesSelected)">
           <label :for="val">{{ val }}</label>
@@ -76,18 +78,9 @@ import axios from 'axios';
                 7: "Other"
               },
               sortSelected: null,
-              categoriesSelected: []
+              categoriesSelected: [],
+              titleOrDesc: false
           }
-    },
-    computed: {
-      selected: {
-        get() {
-          return this.sortSelected;
-        },
-        set(v){
-          this.sortSelected = v;
-        }
-      }
     },
     mounted() {
       this.getAntiques();
@@ -98,12 +91,20 @@ import axios from 'axios';
           this.antiques = res.data;
         });
       },
-      searchName(){
-        let name = document.getElementById("search-input").value;
+      search(){
+        
+        let token = document.getElementById("search-input").value;
         let filteredAntiques = [];
         for(let i = 0; i < this.antiques.length; i++){
-          if(this.antiques[i].name.includes(name)){
+          if(this.titleOrDesc){
+            if(this.antiques[i].name.includes(token) || this.antiques[i].description.includes(token)){
             filteredAntiques.push(this.antiques[i]);
+            }
+          }
+          else {
+            if(this.antiques[i].name.includes(token)){
+            filteredAntiques.push(this.antiques[i]);
+            }
           }
         }
         this.antiques = filteredAntiques;      
@@ -145,7 +146,7 @@ import axios from 'axios';
           
           this.orderPrice(this.sortSelected);
         });
-      }
+      },
     }
 }
 
