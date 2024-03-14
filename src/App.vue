@@ -25,7 +25,7 @@
       <h2>Items Per Page:</h2>
       <div id="page-box">
         <div id="items-per-page-box" v-for="val in itemsPerPage">
-          <button :name="val">{{ val }}</button>
+          <button :name="val" @click="updateNumItems(val)">{{ val }}</button>
         </div>
         <h2>Page:</h2>
         <button id="to-first" @click="displayPageAntiques(1)"> &lt;&lt; </button>
@@ -109,7 +109,7 @@ import axios from 'axios';
         axios.get(`http://localhost:3500/api/antiques/`).then(res => {
           this.antiques = res.data;
           this.updateNumPages();  
-          this.displayPageAntiques(this.curPage);
+          this.displayPageAntiques(1);
         });
       },
       displayPageAntiques(pageNum){
@@ -117,8 +117,8 @@ import axios from 'axios';
           this.curPage = pageNum;
           this.curAntiques = [];
           let allAntiques = this.proxyToJSON(this.antiques);
-          let idx = (this.curPage-1) * 20;
-          let endIdx  = (this.curPage < this.numPages) ? this.curPage * 20 : allAntiques.length;
+          let idx = (this.curPage-1) * this.itemsPerPageSelected;
+          let endIdx  = (this.curPage < this.numPages) ? this.curPage * this.itemsPerPageSelected : allAntiques.length;
           for(idx; idx < endIdx; idx++){
             this.curAntiques.push(allAntiques[idx]);
           }
@@ -157,6 +157,7 @@ import axios from 'axios';
         else if(sortType == -1){
           this.antiques.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
         }
+        this.displayPageAntiques(this.curPage);
       },
       filterByCategories(){
         axios.get(`http://localhost:3500/api/antiques/`).then(res => {
@@ -185,6 +186,11 @@ import axios from 'axios';
       },
       proxyToJSON(proxyArr){
         return JSON.parse(JSON.stringify(proxyArr));
+      },
+      updateNumItems(newItems){
+        this.itemsPerPageSelected = newItems;
+        this.displayPageAntiques(1);
+        this.updateNumPages();
       },
       updateNumPages(){
         this.numPages = Math.ceil(this.antiques.length/this.itemsPerPageSelected);
