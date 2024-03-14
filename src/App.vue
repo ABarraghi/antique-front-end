@@ -28,9 +28,13 @@
           <button :name="val">{{ val }}</button>
         </div>
         <h2>Page:</h2>
+        <button id="to-first" @click="displayPageAntiques(1)"> &lt;&lt; </button>
+        <button id="to-prev" @click="displayPageAntiques(curPage-1)"> &lt; </button>
         <div id="pagination" v-for="i in numPages">
           <button @click="displayPageAntiques(i)">{{ i }}</button>
         </div>
+        <button id="to-next" @click="displayPageAntiques(curPage+1)"> &gt; </button>
+        <button id="to-last" @click="displayPageAntiques(numPages)"> &gt;&gt; </button>
       </div>
     </div>
   </section>
@@ -104,19 +108,21 @@ import axios from 'axios';
       getAntiques(){
         axios.get(`http://localhost:3500/api/antiques/`).then(res => {
           this.antiques = res.data;
+          this.updateNumPages();  
           this.displayPageAntiques(this.curPage);
         });
       },
       displayPageAntiques(pageNum){
-        this.curPage = pageNum;
-        this.curAntiques = [];
-        let allAntiques = this.proxyToJSON(this.antiques);
-        let idx = (this.curPage-1) * 20;
-        let endIdx  = (this.curPage < this.numPages) ? this.curPage * 20 : allAntiques.length;
-        for(idx; idx < endIdx; idx++){
-          this.curAntiques.push(allAntiques[idx]);
+        if((pageNum > 0) && (pageNum <= this.numPages)){
+          this.curPage = pageNum;
+          this.curAntiques = [];
+          let allAntiques = this.proxyToJSON(this.antiques);
+          let idx = (this.curPage-1) * 20;
+          let endIdx  = (this.curPage < this.numPages) ? this.curPage * 20 : allAntiques.length;
+          for(idx; idx < endIdx; idx++){
+            this.curAntiques.push(allAntiques[idx]);
+          }
         }
-        console.log(this.proxyToJSON(this.curAntiques));
       },
       search(){
         let token = document.getElementById("search-input").value;
@@ -133,7 +139,9 @@ import axios from 'axios';
             }
           }
         }
-        this.antiques = filteredAntiques;      
+        this.antiques = filteredAntiques;
+        this.updateNumPages();   
+        this.displayPageAntiques(1);
       },
       clearFilters(){
         document.getElementById("search-input").value = "";
@@ -154,7 +162,7 @@ import axios from 'axios';
         axios.get(`http://localhost:3500/api/antiques/`).then(res => {
           this.antiques = res.data;
 
-          let categoryTypes = JSON.parse(JSON.stringify(this.categoriesSelected));
+          let categoryTypes = this.proxyToJSON(this.categoriesSelected);
 
           for(let i = 0; i < categoryTypes.length; i++ ){
             categoryTypes[i] = Number(categoryTypes[i]);
@@ -168,22 +176,23 @@ import axios from 'axios';
           }
 
           if(filteredAntiques.length!=0){
-            this.antiques = filteredAntiques; 
+            this.antiques = filteredAntiques;
+            this.orderPrice(this.sortSelected);
+            this.updateNumPages();
+            this.displayPageAntiques(1); 
           }
-          
-          this.orderPrice(this.sortSelected);
         });
       },
       proxyToJSON(proxyArr){
         return JSON.parse(JSON.stringify(proxyArr));
+      },
+      updateNumPages(){
+        this.numPages = Math.ceil(this.antiques.length/this.itemsPerPageSelected);
       }
     }
 }
 
-
 </script>
-
-
 
 <style scoped>
 
