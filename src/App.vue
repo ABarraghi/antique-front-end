@@ -1,5 +1,30 @@
 
 <template>
+
+  <section id="title_section">
+  </section>
+
+  <section id="hero_section">
+
+  </section>
+
+  <section id="navbar_section">
+
+  </section>
+
+  <section id="sort_perpage_section">
+
+  </section>
+
+  <section id="display_section">
+
+  </section>
+
+
+  <section id="footer_section">
+
+  </section>
+
   <section>
     <div>
       <input type="text" placeholder="Search for an Antique" id="search-input">
@@ -27,7 +52,7 @@
         <div id="items-per-page-box" v-for="val in itemsPerPage">
           <button :name="val" @click="updateNumItems(val)">{{ val }}</button>
         </div>
-        <h2>Page:</h2>
+        <h2 class="sky-400">Page:</h2>
         <button id="to-first" @click="displayPageAntiques(1)"> &lt;&lt; </button>
         <button id="to-prev" @click="displayPageAntiques(curPage-1)"> &lt; </button>
         <div id="pagination" v-for="i in numPages">
@@ -201,5 +226,10 @@ import axios from 'axios';
 </script>
 
 <style scoped>
+
+@font-face {
+  font-family: title;
+  src: url("fonts/Atlas\ Regular.ttf");
+}
 
 </style>
